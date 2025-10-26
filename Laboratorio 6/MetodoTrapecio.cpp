@@ -3,8 +3,10 @@
 #include <cmath>
 #include <stdexcept>
 #include <iomanip>
+#include <string>
+#include <map>
 
-// Clase para manejar excepciones personalizadas
+// Clase para manejar excepciones personalizadas de integrales
 class IntegracionException : public std::exception {
 private:
     std::string mensaje;
@@ -15,22 +17,22 @@ public:
     }
 };
 
-// Clase principal para el método del trapecio
+
 class MetodoTrapecio {
 private:
     double a, b;  // Límites de integración
     int n;        // Número de trapecios
     
-    // Función inline para calcular el ancho de cada trapecio
+    // Función para calcular el ancho de cada trapecio (Inline)
     inline double calcularH() const {
         return (b - a) / n;
     }
     
-    // Función friend para imprimir resultados
+    // Función para imprimir resultados (friend, implementada fuera de la clase)
     friend std::ostream& operator<<(std::ostream& os, const MetodoTrapecio& mt);
 
 public:
-    // Constructor con validación
+    // Manejo de excepciones en el constructor
     MetodoTrapecio(double limite_a, double limite_b, int num_trapecios) 
         : a(limite_a), b(limite_b), n(num_trapecios) {
         if (a >= b) {
@@ -41,12 +43,15 @@ public:
         }
     }
     
-    // Método template para integrar cualquier tipo de función
+    /* 
+        Para reutilizar código se usan funciones genéricas, o en c++ templates,
+        con ello podemos tener cualquier clase de función y aplicar estos métodos.
+    */
     template<typename Funcion>
     double integrar(Funcion f) const {
         try {
-            double h = calcularH();
-            double suma = 0.0;
+            double h = calcularH(); // Calcula el ancho de cada trapecio
+            double suma = 0.0; // Suma de los f(x) intermedios
             
             // Evaluar los puntos intermedios
             for (int i = 1; i < n; i++) {
@@ -83,12 +88,18 @@ public:
     }
     
     // Getters const
-    double getLimiteInferior() const { return a; }
-    double getLimiteSuperior() const { return b; }
-    int getNumTrapecios() const { return n; }
+    double getLimiteInferior() const { 
+        return a; 
+    }
+    double getLimiteSuperior() const { 
+        return b; 
+    }
+    int getNumTrapecios() const { 
+        return n; 
+    }
 };
 
-// Sobrecarga del operador << para imprimir información
+// Implementación del método friend
 std::ostream& operator<<(std::ostream& os, const MetodoTrapecio& mt) {
     os << "Método del Trapecio [a=" << mt.a << ", b=" << mt.b 
        << ", n=" << mt.n << ", h=" << mt.calcularH() << "]";
@@ -98,78 +109,146 @@ std::ostream& operator<<(std::ostream& os, const MetodoTrapecio& mt) {
 // Clase con funciones estáticas predefinidas
 class Funciones {
 public:
-    // Función estática inline
     static inline double cuadratica(double x) {
         return x * x;
+    }
+    
+    static inline double cubica(double x) {
+        return x * x * x;
     }
     
     static inline double seno(double x) {
         return std::sin(x);
     }
     
+    static inline double coseno(double x) {
+        return std::cos(x);
+    }
+    
     static inline double exponencial(double x) {
         return std::exp(x);
     }
-};
-
-int main() {
-    std::cout << std::fixed << std::setprecision(6);
     
-    try {
-        // Ejemplo 1: Usando función lambda
-        std::cout << "=== Ejemplo 1: Función Lambda ===" << std::endl;
-        MetodoTrapecio trapecio1(0.0, 1.0, 100);
-        std::cout << trapecio1 << std::endl;
-        
-        auto lambda = [](double x) { return x * x; };
-        double resultado1 = trapecio1.integrar(lambda);
-        std::cout << "Integral de x^2 en [0,1]: " << resultado1 << std::endl;
-        std::cout << "Valor exacto: " << 1.0/3.0 << std::endl << std::endl;
-        
-        // Ejemplo 2: Usando función estática
-        std::cout << "=== Ejemplo 2: Función Estática ===" << std::endl;
-        MetodoTrapecio trapecio2(0.0, M_PI, 1000);
-        double resultado2 = trapecio2.integrar(Funciones::seno);
-        std::cout << "Integral de sen(x) en [0,π]: " << resultado2 << std::endl;
-        std::cout << "Valor exacto: 2.0" << std::endl << std::endl;
-        
-        // Ejemplo 3: Usando std::function
-        std::cout << "=== Ejemplo 3: std::function ===" << std::endl;
-        std::function<double(double)> func = [](double x) { return 1.0 / (1.0 + x * x); };
-        MetodoTrapecio trapecio3(0.0, 1.0, 500);
-        double resultado3 = trapecio3(func);  // Usando operador()
-        std::cout << "Integral de 1/(1+x²) en [0,1]: " << resultado3 << std::endl;
-        std::cout << "Valor exacto (π/4): " << M_PI/4.0 << std::endl << std::endl;
-        
-        // Ejemplo 4: Lambda con captura
-        std::cout << "=== Ejemplo 4: Lambda con Captura ===" << std::endl;
-        double k = 2.0;
-        auto lambdaCaptura = [k](double x) { return k * std::exp(x); };
-        MetodoTrapecio trapecio4(0.0, 1.0, 200);
-        double resultado4 = trapecio4(lambdaCaptura);
-        std::cout << "Integral de 2*e^x en [0,1]: " << resultado4 << std::endl << std::endl;
-        
-        // Ejemplo 5: Manejo de excepciones - límites inválidos
-        std::cout << "=== Ejemplo 5: Manejo de Excepciones ===" << std::endl;
-        try {
-            MetodoTrapecio trapecioInvalido(5.0, 1.0, 100);
-        } catch (const IntegracionException& e) {
-            std::cout << "Excepción capturada: " << e.what() << std::endl;
-        }
-        
-        // Ejemplo 6: Función que produce valores inválidos
-        try {
-            MetodoTrapecio trapecio5(-1.0, 1.0, 100);
-            auto funcionInvalida = [](double x) { return std::log(x); };  // log negativo
-            trapecio5.integrar(funcionInvalida);
-        } catch (const IntegracionException& e) {
-            std::cout << "Excepción capturada: " << e.what() << std::endl;
-        }
-        
-    } catch (const std::exception& e) {
-        std::cerr << "Error no manejado: " << e.what() << std::endl;
-        return 1;
+    static inline double logaritmo(double x) {
+        if (x <= 0) throw std::domain_error("Logaritmo de número no positivo");
+        return std::log(x);
     }
     
+    static inline double raizCuadrada(double x) {
+        if (x < 0) throw std::domain_error("Raíz cuadrada de número negativo");
+        return std::sqrt(x);
+    }
+    
+    static inline double inverso(double x) {
+        if (x == 0) throw std::domain_error("División por cero");
+        return 1.0 / x;
+    }
+    
+    static inline double tangenteHiperbolica(double x) {
+        return std::tanh(x);
+    }
+};
+
+// Función para mostrar el menú
+void mostrarMenu() {
+    std::cout << "\nSeleccione la función a integrar:" << std::endl;
+    std::cout << "  1. Función cuadrática" << std::endl;
+    std::cout << "  2. Función cúbica" << std::endl;
+    std::cout << "  3. Función Seno" << std::endl;
+    std::cout << "  4. Función Coseno" << std::endl;
+    std::cout << "  5. Función Exponencial" << std::endl;
+    std::cout << "  6. Función Logaritmo natural" << std::endl;
+    std::cout << "  7. Función Raíz cuadrada" << std::endl;
+    std::cout << "  8. Función Inverso" << std::endl;
+    std::cout << "  9. Función Tangente hiperbólica" << std::endl;
+    std::cout << "  0. Salir" << std::endl;
+    std::cout << "\nOpción: ";
+}
+
+// Función para leer un número double con validación
+double leerDouble(const std::string& prompt) {
+    double valor;
+    while (true) {
+        std::cout << prompt;
+        if (std::cin >> valor) {
+            std::cin.ignore(10000, '\n');
+            return valor;
+        } else {
+            std::cout << "Error: Debe ingresar un número válido." << std::endl;
+            std::cin.clear();
+            std::cin.ignore(10000, '\n');
+        }
+    }
+}
+
+// Función para leer un número entero con validación
+int leerInt(const std::string& prompt) {
+    int valor;
+    while (true) {
+        std::cout << prompt;
+        if (std::cin >> valor) {
+            std::cin.ignore(10000, '\n');
+            return valor;
+        } else {
+            std::cout << "Error: Debe ingresar un número entero válido." << std::endl;
+            std::cin.clear();
+            std::cin.ignore(10000, '\n');
+        }
+    }
+}
+
+int main() {
+    std::map<int, std::function<double(double)>> funciones = {
+        {1, Funciones::cuadratica}, 
+        {2, Funciones::cubica},
+        {3, Funciones::seno},       
+        {4, Funciones::coseno},
+        {5, Funciones::exponencial},
+        {6, Funciones::logaritmo},
+        {7, Funciones::raizCuadrada},
+        {8, Funciones::inverso},
+        {9, Funciones::tangenteHiperbolica}
+    };
+    
+    std::map<int, std::string> nombres = {
+        {1, "Función cuadrática"},
+        {2, "Función cúbica"},
+        {3, "Seno"},
+        {4, "Coseno"},
+        {5, "Exponencial"},
+        {6, "Logaritmo natural"},
+        {7, "Raíz cuadrada"},
+        {8, "Inverso"},
+        {9, "Tangente hiperbólica"}
+    };
+
+    while (true) {
+        mostrarMenu();
+        int opcion = leerInt("");
+        if (opcion == 0) break;
+        if (funciones.count(opcion) == 0) {
+            std::cout << "Opción no válida.\n";
+            continue;
+        }
+
+        try {
+            double a = leerDouble("Ingrese el límite inferior: ");
+            double b = leerDouble("Ingrese el límite superior: ");
+            int n = leerInt("Ingrese el número de trapecios: ");
+
+            MetodoTrapecio trapecio(a, b, n);
+            double resultado = trapecio(funciones[opcion]);
+
+            std::cout << std::fixed << std::setprecision(6);
+            std::cout << "\n" << nombres[opcion]
+                      << " integrada en [" << a << ", " << b 
+                      << "] = " << resultado << "\n";
+        }
+        catch (const std::exception& e) {
+            std::cout << "\n" << e.what() << "\n";
+        }
+    }
+
+    std::cout << "\nPrograma finalizado.\n";
     return 0;
 }
