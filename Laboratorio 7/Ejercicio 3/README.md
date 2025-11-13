@@ -1,0 +1,7 @@
+Este código implementa el patrón Singleton para gestionar una conexión única a base de datos en C++. La clase ConexionBD garantiza que solo exista una instancia en toda la aplicación, evitando duplicación de recursos y manteniendo consistencia en el estado de la conexión.
+
+El núcleo del diseño reside en el constructor privado y el método estático obtenerInstancia(), que controla la creación de la instancia única. Se emplea un mutex para protección thread-safe, asegurando que múltiples hilos no creen instancias concurrentes. La inicialización perezosa optimiza recursos creando la conexión solo cuando es necesaria.
+
+La clase incluye funcionalidad completa para gestionar el ciclo de vida de la conexión: conectar(), desconectar(), estado() y ejecutarConsulta(). Cada método verifica el estado actual antes de operar, previniendo errores y proporcionando feedback claro. El uso de unique_ptr garantiza liberación automática de memoria.
+
+Las demostraciones muestran escenarios prácticos donde diferentes módulos de una aplicación reutilizan la misma instancia, verificando que las direcciones de memoria son idénticas. Este diseño es ideal para recursos compartidos costosos como conexiones a BD, donde la singularidad y consistencia son críticas.
