@@ -1,0 +1,11 @@
+[2025-11-19 21:22:06] Logger: Sistema de registro inicializado
+[2025-11-19 21:22:06] Main: Iniciando aplicacion
+[2025-11-19 21:22:06] Main: Configurando sistema
+[2025-11-19 21:22:06] FuncionPruebaA: Iniciando proceso A
+[2025-11-19 21:22:06] FuncionPruebaA: Procesando datos...
+[2025-11-19 21:22:06] FuncionPruebaB: Iniciando proceso B
+[2025-11-19 21:22:06] FuncionPruebaB: Calculando resultados...
+[2025-11-19 21:22:06] Procesador: Iniciando procesamiento
+[2025-11-19 21:22:06] Procesador: Procesamiento completado
+[2025-11-19 21:22:06] Main: Finalizando aplicacion
+[2025-11-19 21:22:06] Logger: Cerrando sistema de registro
